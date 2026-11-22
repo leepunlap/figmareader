@@ -51,7 +51,11 @@ def main() -> int:
         if m:
             data[m.group(1)] = float(m.group(2))
     # drop entries whose screen no longer exists (e.g. the pre-rename keys)
-    known = set(built_names())
+    # the Lion pages live in the same file, so keep any key whose html exists
+    known = set(built_names()) | {
+        p.stem for p in ROOT.glob("*.html")
+        if p.stem not in ("index", "v1", "compare-lion")
+    }
     stale = [k for k in data if k not in known]
     for k in stale:
         del data[k]

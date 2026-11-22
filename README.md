@@ -63,6 +63,8 @@ the ground truth for the strings, and every change is A/B measured.**
 ```
   render_check.py     render a screen in headless Chrome and pixel-diff it
   measure_v1.py       measure every built v1 screen -> analysis/v1-diff.json
+  measure_all.py      the same for every screen, in a private work dir, so it
+                      is safe to run while other agents are working
   prerender.py        render + diff in a private work dir (safe while other
                       agents are working) and print the hottest bands
   bandfit.py          A/B a CSS override on a band of the screen; the override
@@ -70,8 +72,15 @@ the ground truth for the strings, and every change is A/B measured.**
   autotune.py         snap every text block to one font size, then align the
                       block vertically to the export — keeps the change only
                       when the page diff improves
+  advcheck.py         per OCR line: the CJK advance and the ink height of the
+                      export vs the render — this is how the real font size is
+                      measured instead of guessed
   linesync.py         per OCR line: source ink box vs render ink box
   fixline.py          repair an OCR'd line and re-fit its font size
+  orphan_classes.py   classes used in the markup that no stylesheet defines —
+                      the element silently loses its position
+  cta_fit.py          fit an orange CTA out of the export: geometry, the
+                      diagonal fill gradient and the glow around the pill
   inkprof.py          ink profile of a band: coverage, IoU, best dx/dy
   char_probe.py       measure the advance width of a string in the browser
   font_of.py          the ink width of one character in one typeface
@@ -271,6 +280,38 @@ again and again. All three are fixed globally rather than per screen:
   each band of the render against the export and reports the best `dx`/`dy`;
   the shift is then written into the page. This is worth more than any
   typeface change on a text-heavy screen.
+
+### What the later passes taught us
+
+A second look at the screens that were still above the budget found four
+defects that the eye misses but the pixel diff does not:
+
+* **The font size can be measured, not guessed.** The fitter solved each
+  line's size from the line's *ink width*, which is wrong whenever the OCR
+  text of a line lost a character — the fitter then inflates the size and
+  adds letter-spacing to make the line reach the right edge again. Two
+  independent measurements give the truth: the **CJK advance** (the distance
+  between two glyph centres) is exactly 1 em for full-width glyphs, so
+  `advance = font-size + letter-spacing`, and the export has no
+  letter-spacing on CJK; and the **ink height** of a dense glyph scales with
+  the font size alone. `scripts/advcheck.py` prints both, source versus
+  render, for every OCR line. On `v1-invite-1` the rules paragraph was
+  15.5 px where the export draws 16 px, and the two circular buttons sat
+  16 px too high — together that took the screen from 8.61 % to 7.53 %.
+* **A class in the markup that no stylesheet defines.** The position rule
+  for an element is written as `.card .pin.pin--1-6`, and the markup said
+  `class="pin pin--1"`, so the icon silently fell back to the origin of its
+  card. `scripts/orphan_classes.py` finds this class of bug across all 163
+  pages in one pass.
+* **The orange CTA is not a CSS gradient.** The quota modal's button is
+  62 px tall (not 55), its fill runs on a slight diagonal, and the export
+  draws a soft orange *glow* around the pill. `scripts/cta_fit.py` measures
+  all three out of the export; the measured geometry, gradient and a tuned
+  `box-shadow` glow took the three quota screens from 6.10 % to 4.77 %.
+* **The cards carry Figma's own drop shadow.** A CSS `box-shadow` is not a
+  Gaussian, so a wide soft shadow has to be fitted empirically — scanning a
+  row of the export gives the profile, and the closest CSS shadow is found by
+  sweep. This is the single biggest structural term on the list screens.
 
 Because every page uses a different set of glyphs, each screen ships its own
 subsetted font stylesheet (`assets/lion/lion-NN-fonts.css`, ~80–200 KB) with
