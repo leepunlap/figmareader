@@ -27,7 +27,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-WORK = Path("/tmp/measure-all")
+WORK = Path(os.environ.get("MEASURE_WORK", "/tmp/measure-all"))
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 OUT = ROOT / "analysis/v1-diff.json"
 ROW = re.compile(r"^(\S+)\s+\(\d+,\s*\d+\)\s+\(\d+,\s*\d+\)\s+([\d.]+)%")

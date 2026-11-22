@@ -14,6 +14,7 @@ reports how much of the band still differs.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -23,6 +24,10 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = Path("/tmp/figma-render")
+# a private work directory keeps the tool from stepping on another agent's
+# render while a worker is measuring the same slug
+if os.environ.get("BANDFIT_WORK"):
+    WORK = Path(os.environ["BANDFIT_WORK"])
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 
@@ -131,9 +136,9 @@ def main() -> None:
                 src2 = src_im.resize(ren.size, Image.LANCZOS)
                 A = np.asarray(src2).astype(int)
                 R = np.asarray(ren).astype(int)
-                page = float((np.abs(A - R).sum(axis=2) > 24).mean() * 100)
+                page_pct = float((np.abs(A - R).sum(axis=2) > 24).mean() * 100)
                 tot = 0.0
-                print("variant: %s   page diff %.2f%%" % (name, page))
+                print("variant: %s   page diff %.2f%%" % (name, page_pct))
                 for (y0, y1) in bands:
                     d, dx, dy = best_band(src2, ren, y0, y1)
                     tot += d
