@@ -278,6 +278,60 @@ only the characters that screen needs, inlined as base64 data URIs. It is
 linked **after** `assets/fonts/fonts.css` so the matching family+weight
 declaration wins.
 
+## Current state
+
+<!-- status:begin -->
+
+| | screens | mean diff | over the 6 % budget |
+|---|---|---|---|
+| v1.0 page | 98 | 4.74 % | 20 |
+| v1.0 最初版 (7.3) page | 63 | 4.33 % | 15 |
+| **all** | **161** | **4.58 %** | **35** |
+
+Best 0.00 %, worst 9.87 %.
+
+Screens still above the 6 % budget:
+
+* `v73-competition2-03` — 9.87 %
+* `v1-svip-membership-yearly` — 9.41 %
+* `v1-ssvip-membership-monthly` — 9.28 %
+* `v1-vip-membership-yearly` — 9.16 %
+* `v1-chat-recommended-task-pack` — 9.05 %
+* `v1-competition-detail-open` — 8.97 %
+* `v1-svip-membership-monthly` — 8.72 %
+* `v1-invite-1` — 8.61 %
+* `v73-competition2-02` — 8.54 %
+* `v1-vip-membership-monthly` — 8.39 %
+* `v73-competition-01` — 8.33 %
+* `v1-competition-detail-closed` — 7.97 %
+* `v1-school-detail` — 7.95 %
+* `v73-activity-03` — 7.90 %
+* `v1-ssvip-membership-yearly` — 7.60 %
+* `v73-activity-15` — 7.39 %
+* `v1-home` — 7.29 %
+* `v1-favourites-expired` — 7.14 %
+* `v1-img-1142-1` — 7.13 %
+* `v73-mine-04` — 7.02 %
+* `v73-competition2-15` — 6.92 %
+* `v1-chat-answer-ready` — 6.79 %
+* `v1-chat-dislike-feedback` — 6.79 %
+* `v1-chat-like-feedback` — 6.79 %
+* `v1-my-competition-all` — 6.79 %
+* `v73-competition2-13` — 6.77 %
+* `v73-activity-06` — 6.76 %
+* `v73-competition-02` — 6.73 %
+* `v73-activity-04` — 6.59 %
+* `v73-competition-04` — 6.54 %
+* `v73-activity-02` — 6.43 %
+* `v73-competition-03` — 6.43 %
+* `v1-ai-agreement-modal` — 6.21 %
+* `v73-activity-09` — 6.21 %
+* `v1-quota-exhausted-ssvip` — 6.10 %
+
+These are the text-heavy screens. The residual is glyph anti-aliasing: the export is a 4× raster that Figma drew with its own renderer, Chrome rasterises natively at 2×, and even with identical glyph geometry ~29 % of the pixels of a text row differ by more than the 24/765 comparison threshold. The typeface, weight, size, sub-pixel position and the resampling pipeline were all swept and are already at their best (see *What the v1.0 pages taught us* above).
+
+<!-- status:end -->
+
 ## Known limitations
 
 - **Typeface.** Noto Sans TC / Arimo are close matches, not the original fonts.
