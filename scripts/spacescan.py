@@ -123,20 +123,19 @@ def main() -> int:
         r = runs(np.asarray(ren)[sy:ey, rx:rx + rw], 2)
         if len(s) < 2 or len(r) < 2:
             continue
-        # align the two run lists from the left
-        drift = None
-        for i in range(min(len(s), len(r))):
-            d = s[i][0] - r[i][0]
-            if abs(d) > args.tol:
-                drift = (i, d)
-                break
-        if drift is None:
+        # the ink box of the whole row is the robust comparison: run
+        # boundaries shift with the raster, the first/last ink column do not
+        s_start, s_end = s[0][0], s[-1][1]
+        r_start, r_end = r[0][0], r[-1][1]
+        d_start = s_start - r_start
+        d_end = s_end - r_end
+        if abs(d_start) <= args.tol and abs(d_end) <= args.tol:
             continue
-        i, d = drift
-        # the gap in the source just before the diverging run
-        gap = s[i][0] - s[i - 1][1] if i > 0 else 0.0
-        print("  run %d  drift %+.2f px  src gap before it %.2f px | %s"
-              % (i, d, gap, text[:44]))
+        # the gap in the source just before the last run that starts the text
+        gap = max((s[i][0] - s[i - 1][1] for i in range(1, len(s))
+                   if s[i][0] - r_start > 2), default=0.0)
+        print("  start %+.2f  end %+.2f px  src gap %.2f | %s"
+              % (d_start, d_end, gap, text[:44]))
         hits += 1
     print("%d drifting line(s)" % hits)
     return 0

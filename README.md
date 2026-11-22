@@ -76,7 +76,16 @@ the ground truth for the strings, and every change is A/B measured.**
                       export vs the render — this is how the real font size is
                       measured instead of guessed
   linesync.py         per OCR line: source ink box vs render ink box
+  shiftprobe.py       per hot band: the best integer shift and the diff it buys —
+                      separates a line that is off by N px from the text floor
+  spacefit.py         solve the *spacing* of one line: render candidate strings
+                      with spaces at chosen slots and score each vs the export
+  textvar.py          measure a page with one element's text substituted, so a
+                      candidate string can be A/B'd instead of argued about
   fixline.py          repair an OCR'd line and re-fit its font size
+  fix_detail_paragraph.py
+                      apply the measured line offsets / spacing / character
+                      fixes to the four competition-detail screens
   orphan_classes.py   classes used in the markup that no stylesheet defines —
                       the element silently loses its position
   cta_fit.py          fit an orange CTA out of the export: geometry, the
@@ -327,9 +336,9 @@ things that look like typography are actually text *content*:
   have no markup, which is how the competition-detail screens turned out to
   be missing cards 3/4/5/7 entirely.
 * **The design uses ideographic spaces (U+3000) that the HTML dropped.**
-  `scripts/spacescan.py` aligns the ink-run boundaries of the source and the
-  render for every OCR line and reports the first point where the two drift
-  apart. On the competition-detail pages the list items are `1.`, then a
+  `scripts/spacescan.py` compares the ink box of the source and the render —
+  the first and last ink column of a line — for every OCR line and reports the
+  drift at each end. On the competition-detail pages the list items are `1.`, then a
   full-width space, then the text; the hand-written HTML used an ASCII space
   or nothing, which shifted every following glyph by 14 px and made those
   lines read 5 % too narrow. Restoring U+3000 (and the full-width `：` and

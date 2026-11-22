@@ -129,7 +129,12 @@ def main() -> None:
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--rounds", type=int, default=1)
     ap.add_argument("--radius", type=int, default=7)
+    ap.add_argument("--work", default=WORK, help="scratch dir for the render")
     args = ap.parse_args()
+
+    work = Path(args.work)
+    work.mkdir(parents=True, exist_ok=True)
+    globals()["WORK"] = work
 
     slug = args.slug
     page = ROOT / f"{slug}.html"
