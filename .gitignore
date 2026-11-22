@@ -1,0 +1,63 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# figmareader — only the tooling and the knowledge file are tracked.
+# Everything below is regenerable from the Figma export or from scripts/.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── raw Figma exports (4× PNG) — regenerate from the Figma desktop app ──────
+source/
+
+# ── OCR / vision analysis output — regenerate with scripts/ocr_screen.py ────
+analysis/
+
+# ── extracted images + inlined font subsets — regenerate from source/ ───────
+assets/
+
+# ── generated spec JSON — regenerate with scripts/ocrfit.py ─────────────────
+specs/
+
+# ── generated pages (one file per artboard) + the gallery ───────────────────
+*.html
+!scripts/*.html
+
+# ── shared stylesheets belong to the page build, not to the tool ────────────
+/styles.css
+/styles-lion.css
+/styles-v1.css
+
+# ── flat comparison sheet ───────────────────────────────────────────────────
+/compare-lion.png
+/preview.png
+/compare.png
+
+# ── delivery archives ───────────────────────────────────────────────────────
+*.zip
+
+# ── compiled macOS helpers — run the .swift sources directly ─────────────────
+#     ./scripts/fgclick.swift 1 2
+#     ./scripts/fgkey.swift cmd+s
+scripts/fgclick
+scripts/fgkey
+scripts/fgtype
+scripts/axfind
+
+# ── Figma API cache (regenerable — each miss costs API quota) ───────────────
+.figma-cache/
+
+# ── never commit a personal access token ────────────────────────────────────
+.figma_token
+*.figma_token
+.env
+.env.*
+
+node_modules/
+.DS_Store
+
+# ── python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+
+# ── scratch space ───────────────────────────────────────────────────────────
+.tmpwork/
+sw-v_*/
+/_probe_t.html
+/_weighttest.html
