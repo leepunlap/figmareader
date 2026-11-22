@@ -38,10 +38,11 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--width", type=int, default=420, help="width of each half")
     ap.add_argument("--zoom", type=int, default=1, help="extra magnification")
+    ap.add_argument("--render", help="use this render png instead of /tmp/figma-render")
     args = ap.parse_args()
 
     src_path = find_source(args.slug)
-    ren_path = f"/tmp/figma-render/{args.slug}.png"
+    ren_path = args.render or f"/tmp/figma-render/{args.slug}.png"
     if not os.path.exists(ren_path):
         raise SystemExit(f"no render at {ren_path}; run render_check.py {args.slug} --keep")
 

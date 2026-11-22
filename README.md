@@ -313,6 +313,36 @@ defects that the eye misses but the pixel diff does not:
   row of the export gives the profile, and the closest CSS shadow is found by
   sweep. This is the single biggest structural term on the list screens.
 
+### What the third pass taught us
+
+The remaining screens were re-examined with two new detectors, and three
+things that look like typography are actually text *content*:
+
+* **A band over ~50 % hot is a structural bug; 15–35 % is the text floor.**
+  `scripts/structscan.py` renders every screen into a private work directory
+  and reports the CSS bands whose hot fraction is too high for anti-aliasing
+  noise. A band over ~50 % means a missing element, a wrong box or a wrong
+  height; below that it is just the raster. `scripts/phantom_classes.py` is
+  the inverse of `orphan_classes.py` — it finds CSS classes that *paint* but
+  have no markup, which is how the competition-detail screens turned out to
+  be missing cards 3/4/5/7 entirely.
+* **The design uses ideographic spaces (U+3000) that the HTML dropped.**
+  `scripts/spacescan.py` aligns the ink-run boundaries of the source and the
+  render for every OCR line and reports the first point where the two drift
+  apart. On the competition-detail pages the list items are `1.`, then a
+  full-width space, then the text; the hand-written HTML used an ASCII space
+  or nothing, which shifted every following glyph by 14 px and made those
+  lines read 5 % too narrow. Restoring U+3000 (and the full-width `：` and
+  `－` of `09：30－22：00`) took the four competition-detail screens from
+  8.26/7.09/8.54/8.21 % down to 8.05/6.94/8.25/7.94 %.
+* **A bolder-looking export does not mean a bolder design.** Figma's 4×
+  raster, downsampled with LANCZOS, thickens every stroke, so a line that
+  looks bold in the export can be weight 400 in the design. Bolding the
+  "rules" paragraph of `v1-invite-1` made the diff *worse* (7.51 % → 7.60 %);
+  what that line actually needed was a 3 px upward shift and a 3 px upward
+  shift of the stat cards, whose counters turned out to be Poppins Regular
+  rather than Poppins Bold.
+
 Because every page uses a different set of glyphs, each screen ships its own
 subsetted font stylesheet (`assets/lion/lion-NN-fonts.css`, ~80–200 KB) with
 only the characters that screen needs, inlined as base64 data URIs. It is
