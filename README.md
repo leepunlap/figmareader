@@ -54,6 +54,34 @@ scripts/            the whole toolchain
   *.swift             macOS helpers (run them directly; they have a swift shebang)
 ```
 
+### Pixel-budget tooling
+
+Getting a screen under the 6 % pixel budget is measured work, so the loop is
+scripted. The rule of thumb: **the export is the ground truth, the OCR text is
+the ground truth for the strings, and every change is A/B measured.**
+
+```
+  render_check.py     render a screen in headless Chrome and pixel-diff it
+  measure_v1.py       measure every built v1 screen -> analysis/v1-diff.json
+  prerender.py        render + diff in a private work dir (safe while other
+                      agents are working) and print the hottest bands
+  bandfit.py          A/B a CSS override on a band of the screen; the override
+                      is injected into the rendered copy, never into the file
+  autotune.py         snap every text block to one font size, then align the
+                      block vertically to the export — keeps the change only
+                      when the page diff improves
+  linesync.py         per OCR line: source ink box vs render ink box
+  fixline.py          repair an OCR'd line and re-fit its font size
+  inkprof.py          ink profile of a band: coverage, IoU, best dx/dy
+  char_probe.py       measure the advance width of a string in the browser
+  font_of.py          the ink width of one character in one typeface
+  font_ab.py          typeface A/B on the OCR lines of a screen
+  weightsweep.py      font-weight sweep (the override never touches the file)
+  shiftsweep.py       uniform vertical nudge sweep
+  triage.py           split a screen's diff into "text" and "other"
+  aa_probe.py         compare the resampling/anti-aliasing hypotheses
+```
+
 The pipeline is one direction only:
 
 ```
@@ -219,6 +247,30 @@ candidate families against the source pixels.
 * **Stem weight.** The 4× export is downsampled for the comparison, which
   softens and fattens the stems. A `text-shadow: 0 0 0.2px currentColor` on
   the black body copy restores the stem weight (measured −0.11 pp).
+
+### What the v1.0 pages taught us
+
+The two v1.0 pages are text-heavy, and three systematic defects showed up
+again and again. All three are fixed globally rather than per screen:
+
+* **Fullwidth punctuation advance.** Chrome's default `text-spacing-trim:
+  normal` halves the advance of a closing fullwidth bracket that stands next
+  to another fullwidth mark, so `）` became 7 px wide instead of 14 px at
+  14 px and every later glyph in the line drifted sideways.
+  `styles-v1.css` therefore sets `text-spacing-trim: space-all` on `body`
+  (measured with `scripts/char_probe.py`); this alone took
+  `v1-competition-detail-closed` from 9.51 % to 8.54 %.
+* **One font size per text block.** The fitter solves for the font size that
+  makes a line's *ink width* match the export, so a line whose OCR text lost
+  a character gets a larger font size and the wrong glyph size. A design
+  block uses one size, so `scripts/autotune.py` snaps every line of a block to
+  the block's own size (13.55, 14.0, 15.28 … → 14) and then aligns the block
+  vertically to the export. Measured on `v1-competition-detail-open`:
+  10.69 % → 8.97 %, on `v1-competition-detail-closed`: 8.54 % → 7.97 %.
+* **Text blocks sit one or two pixels low.** `scripts/bandfit.py` registers
+  each band of the render against the export and reports the best `dx`/`dy`;
+  the shift is then written into the page. This is worth more than any
+  typeface change on a text-heavy screen.
 
 Because every page uses a different set of glyphs, each screen ships its own
 subsetted font stylesheet (`assets/lion/lion-NN-fonts.css`, ~80–200 KB) with
